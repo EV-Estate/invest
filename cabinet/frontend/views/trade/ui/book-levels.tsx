@@ -7,13 +7,14 @@
 import type { KeyboardEvent } from "react";
 
 import { useLocale, useT } from "@evinvest/i18n/react";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, OrderBook, OrderBookHead, OrderBookRow, OrderBookSpread, Skeleton } from "@evinvest/uikit";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle, Skeleton } from "@evinvest/uikit";
 
 import { bookSnapshotResource } from "@/entities/book/model/book-resource";
 import { useResource } from "@/shared/lib/resource";
 import { ResourceError } from "@/shared/ui/resource-error";
 import { depthRows, type DepthRow } from "@/views/trade/lib/depth";
 import { formatUnits, formatUsdt } from "@/views/trade/lib/format";
+import { OrderBook, OrderBookHead, OrderBookRow, OrderBookSpread } from "@/views/trade/ui/terminal";
 
 const ROW_FOCUS = "outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
 

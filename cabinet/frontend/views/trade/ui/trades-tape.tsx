@@ -4,13 +4,14 @@
 // spread. No parties — the hub never discloses them, and the wire has no field for it.
 
 import { useT } from "@evinvest/i18n/react";
-import { OpenOrdersEmpty, Skeleton, TradesTapeRow } from "@evinvest/uikit";
+import { Skeleton } from "@evinvest/uikit";
 
 import { bookTradesResource } from "@/entities/book/model/book-resource";
 import { useLocale } from "@/shared/lib/cabinet-route";
 import { useResource } from "@/shared/lib/resource";
 import { ResourceError } from "@/shared/ui/resource-error";
 import { formatClock, formatUnits, formatUsdt } from "@/views/trade/lib/format";
+import { OpenOrdersEmpty, TradesTapeRow } from "@/views/trade/ui/terminal";
 
 export function TradesTape({ service }: { service: string }) {
   const t = useT();

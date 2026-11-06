@@ -8,7 +8,7 @@ import { useState, type ReactNode } from "react";
 
 import type { Translate } from "@evinvest/i18n";
 import { useT } from "@evinvest/i18n/react";
-import { OpenOrdersEmpty, Skeleton, Tabs, TabsList, TabsTrigger, TerminalPane, TerminalPaneBody, TerminalPaneHeader } from "@evinvest/uikit";
+import { Skeleton, Tabs, TabsList, TabsTrigger } from "@evinvest/uikit";
 
 import { cancelOrder, fillsResource, openOrdersResource, orderHistoryResource } from "@/entities/book/model/book-resource";
 import { errorMessage } from "@/shared/lib/api-client";
@@ -16,6 +16,7 @@ import { useResource, type Resource, type ResourceSnapshot } from "@/shared/lib/
 import { ResourceError } from "@/shared/ui/resource-error";
 import { FillsTable } from "@/views/trade/ui/fills-table";
 import { OrdersTable } from "@/views/trade/ui/orders-table";
+import { OpenOrdersEmpty, TerminalPane, TerminalPaneBody, TerminalPaneHeader } from "@/views/trade/ui/terminal";
 
 type OrdersTab = "open" | "history" | "fills";
 const TABS: readonly OrdersTab[] = ["open", "history", "fills"];

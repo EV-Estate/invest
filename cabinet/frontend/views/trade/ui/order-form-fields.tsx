@@ -5,7 +5,7 @@
 
 import type { Translate } from "@evinvest/i18n";
 import { useLocale, useT } from "@evinvest/i18n/react";
-import { Input, Label, OrderForm, OrderFormRow, OrderFormSubmit, Select, SelectContent, SelectItem, SelectTrigger, Spinner, ToggleGroup, ToggleGroupItem } from "@evinvest/uikit";
+import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, Spinner, ToggleGroup, ToggleGroupItem } from "@evinvest/uikit";
 
 import { ORDER_TIFS } from "@/entities/book/lib/vocabulary";
 import type { Position } from "@/shared/contracts";
@@ -13,6 +13,7 @@ import type { OrderTif } from "@/shared/contracts/book";
 import { cn } from "@/shared/lib/cn";
 import { asDecimal, orderDraftProblem, orderNotional, takerFee, type OrderContext, type OrderDraft } from "@/views/trade/lib/order-form";
 import { formatUnits, formatUsdt, isZero } from "@/views/trade/lib/format";
+import { OrderForm, OrderFormRow, OrderFormSubmit } from "@/views/trade/ui/terminal";
 
 const tifLabels = (t: Translate): Record<OrderTif, string> => ({
   gtc: t("trade.form.tifLabel.gtc", "Good till cancelled"),

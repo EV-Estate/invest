@@ -3,7 +3,7 @@
 // `/invest/[service]/trade` — the terminal over one product's book.
 //
 // Laid out like a spot exchange (ticker, then chart | book | order form, then the
-// trader's own orders) on the uikit's `Terminal` frame; each pane is its own file and
+// trader's own orders) on the `Terminal` frame; each pane is its own file and
 // reads its own resources, so this view only resolves WHICH product and wires the one
 // piece of state two panes share — the price a click on a book level hands to the form.
 //
@@ -18,7 +18,7 @@ import { TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
 import { useT } from "@evinvest/i18n/react";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle, Skeleton, Terminal } from "@evinvest/uikit";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle, Skeleton } from "@evinvest/uikit";
 
 import { bookPolicyResource } from "@/entities/book/model/book-resource";
 import { useBookStream } from "@/entities/book/model/book-socket";
@@ -30,6 +30,7 @@ import { ChartPane } from "@/views/trade/ui/chart-pane";
 import { OrderFormPane, type PricePick } from "@/views/trade/ui/order-form-pane";
 import { OrdersPane } from "@/views/trade/ui/orders-pane";
 import { TickerPane } from "@/views/trade/ui/ticker-pane";
+import { Terminal } from "@/views/trade/ui/terminal";
 
 export function TradeView({ service }: { service: string }) {
   const t = useT();

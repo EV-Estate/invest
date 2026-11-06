@@ -6,9 +6,10 @@
 import { useState } from "react";
 
 import { useT } from "@evinvest/i18n/react";
-import { Tabs, TabsList, TabsTrigger, TerminalPane, TerminalPaneBody, TerminalPaneHeader } from "@evinvest/uikit";
+import { Tabs, TabsList, TabsTrigger } from "@evinvest/uikit";
 
 import { BookLevels } from "@/views/trade/ui/book-levels";
+import { TerminalPane, TerminalPaneBody, TerminalPaneHeader } from "@/views/trade/ui/terminal";
 import { TradesTape } from "@/views/trade/ui/trades-tape";
 
 type BookTab = "book" | "trades";

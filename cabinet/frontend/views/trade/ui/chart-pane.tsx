@@ -1,13 +1,13 @@
 "use client";
 
 // The price chart: candles from the hub's history, extended live from the tape. The
-// engine is mounted on the uikit's `TerminalChart` host by `useCandleChart`; this file
+// engine is mounted on `TerminalChart` host by `useCandleChart`; this file
 // owns only the resolution switch and the three states drawn over an empty canvas.
 
 import { useMemo, useRef, useState } from "react";
 
 import { useT } from "@evinvest/i18n/react";
-import { TerminalChart, TerminalPane, TerminalPaneBody, TerminalPaneHeader, ToggleGroup, ToggleGroupItem } from "@evinvest/uikit";
+import { ToggleGroup, ToggleGroupItem } from "@evinvest/uikit";
 
 import { RESOLUTIONS, isResolution } from "@/entities/book/lib/vocabulary";
 import type { CandleResolution } from "@/shared/contracts/book";
@@ -17,6 +17,7 @@ import { ReloadNotice } from "@/shared/ui/reload-notice";
 import { restChartFeed } from "@/views/trade/lib/chart-feed";
 import { chartOverlay } from "@/views/trade/lib/chart-overlay";
 import { useCandleChart } from "@/views/trade/lib/use-candle-chart";
+import { TerminalChart, TerminalPane, TerminalPaneBody, TerminalPaneHeader } from "@/views/trade/ui/terminal";
 
 const DEFAULT_RESOLUTION: CandleResolution = "1h";
 

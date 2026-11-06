@@ -10,7 +10,7 @@ import { ArrowLeft } from "lucide-react";
 
 import type { Translate } from "@evinvest/i18n";
 import { useLocale, useT } from "@evinvest/i18n/react";
-import { Badge, TerminalTicker, TickerStat } from "@evinvest/uikit";
+import { Badge } from "@evinvest/uikit";
 
 import { bookSnapshotResource } from "@/entities/book/model/book-resource";
 import type { BookStreamStatus } from "@/entities/book/model/book-socket";
@@ -20,6 +20,7 @@ import { Link } from "@/shared/ui/cabinet-link";
 import { ProductIcon, productTone } from "@/shared/ui/icons/products";
 import type { Product } from "@/views/invest/lib/product";
 import { formatChange, formatUnits, formatUsdt, isFall } from "@/views/trade/lib/format";
+import { TerminalTicker, TickerStat } from "@/views/trade/ui/terminal";
 
 export function TickerPane({ product, status }: { product: Product; status: BookStreamStatus }) {
   const t = useT();

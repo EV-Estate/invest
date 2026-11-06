@@ -11,7 +11,7 @@
 import { useRef, useState } from "react";
 
 import { useT } from "@evinvest/i18n/react";
-import { Tabs, TabsList, TabsTrigger, TerminalPane, TerminalPaneBody, TerminalPaneHeader } from "@evinvest/uikit";
+import { Tabs, TabsList, TabsTrigger } from "@evinvest/uikit";
 
 import { bookSnapshotResource, placeOrder } from "@/entities/book/model/book-resource";
 import type { Position } from "@/shared/contracts";
@@ -21,6 +21,7 @@ import { TipAnchor } from "@/shared/tips";
 import { EMPTY_ORDER_DRAFT, orderSubmissionFor, placeOrderBody, type OrderContext, type OrderDraft, type OrderSubmission } from "@/views/trade/lib/order-form";
 import { OrderFormFields } from "@/views/trade/ui/order-form-fields";
 import { OrderGate, OrderOutcome, type Outcome } from "@/views/trade/ui/order-form-notes";
+import { TerminalPane, TerminalPaneBody, TerminalPaneHeader } from "@/views/trade/ui/terminal";
 
 /** A price handed over by a click on a book level. `at` makes two clicks on the same
  *  level two picks — the trader may have edited the price in between. */
