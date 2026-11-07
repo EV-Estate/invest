@@ -39,6 +39,7 @@ evconcierge_client = "0.5.0"
 # docs/SCOPES-AND-APPROVALS.md §4). `pg` is its Postgres bookkeeping store.
 evconcierge_projection = { version = "0.5.0", default-features = false, features = ["pg"] }
 getrandom = { version = "0.3", features = ["wasm_js"] }
+invest-core = { path = "core" }
 invest_contracts = { path = "contracts" }
 invest_domain = { path = "domain" }
 prost = "0.14"
@@ -73,10 +74,17 @@ tower-http = "0.6.11"
 tracing = "0.1.44"
 tracing-subscriber = "0.3.23"
 uuid = "1.23.2"
-invest-core = { path = "core" }
 
 [workspace.lints.rust]
+stable_features = "allow"
 unused_features = "allow"
+
+[workspace.lints.cargo]
+non_kebab_case_bins = "allow"
+
+[workspace.lints.clippy]
+if_not_else = "warn"
+integer_division = "warn"
 
 # smaller target/: trim debuginfo (deps need none), keep line tables for backtraces
 [profile.dev]

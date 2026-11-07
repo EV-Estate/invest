@@ -22,12 +22,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: lazy-trees = true
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/nix-env
+        with: { rust-cache: rust }
       - name: Cargo.lock matches the manifests
         run: nix run .#drift-check
       - name: clippy + tests (Postgres + TigerBeetle)
@@ -39,9 +35,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: lazy-trees = true
+      - uses: ./.github/actions/nix-env
       - name: tsc + eslint + i18n
         run: nix run .#check-frontend
