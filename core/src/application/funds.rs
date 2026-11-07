@@ -495,7 +495,7 @@ pub async fn settle_redemption(ports: &FundPorts<'_>, redemptions: &dyn Redempti
 pub(crate) async fn refuse_recent_poster(nav: &dyn NavMarks, ledger: &dyn Ledger, service: &ServiceId, user: UserId, now_unix: i64) -> Result<(), DomainError> {
 	let since = now_unix.saturating_sub(VALUATION_REDEEM_COOLDOWN_SECS);
 	let subject = user.to_string();
-	let days = VALUATION_REDEEM_COOLDOWN_SECS / (24 * 60 * 60);
+	let days = VALUATION_REDEEM_COOLDOWN_SECS.div_euclid(24 * 60 * 60);
 	if !service.is_reserved() {
 		if nav.posted_by_since(service, &subject, since).await? {
 			return Err(DomainError::Precondition(format!(

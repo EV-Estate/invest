@@ -199,10 +199,10 @@ fn term(name: &str, show: impl Fn(&FeePolicy) -> String, from: &FeePolicy, to: &
 
 /// Basis points as a percentage without trailing zeros: 200 → "2%", 250 → "2.5%".
 fn percent(bps: u32) -> String {
-	let (whole, cents) = (bps / 100, bps % 100);
+	let (whole, cents) = (bps.div_euclid(100), bps % 100);
 	match cents {
 		0 => format!("{whole}%"),
-		c if c % 10 == 0 => format!("{whole}.{}%", c / 10),
+		c if c % 10 == 0 => format!("{whole}.{}%", c.div_euclid(10)),
 		c => format!("{whole}.{c:02}%"),
 	}
 }
@@ -237,15 +237,15 @@ fn utc_moment(unix: i64) -> String {
 	let z = days + 719_468;
 	let era = z.div_euclid(146_097);
 	let doe = z.rem_euclid(146_097);
-	let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
-	let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-	let mp = (5 * doy + 2) / 153;
-	let day = doy - (153 * mp + 2) / 5 + 1;
+	let yoe = (doe - doe.div_euclid(1_460) + doe.div_euclid(36_524) - doe.div_euclid(146_096)).div_euclid(365);
+	let doy = doe - (365 * yoe + yoe.div_euclid(4) - yoe.div_euclid(100));
+	let mp = (5 * doy + 2).div_euclid(153);
+	let day = doy - (153 * mp + 2).div_euclid(5) + 1;
 	let month = if mp < 10 { mp + 3 } else { mp - 9 };
 	let year = yoe + era * 400 + i64::from(month <= 2);
 	// `month` is 1..=12 by construction.
 	let name = MONTHS[usize::try_from(month - 1).unwrap_or(0)];
-	format!("{day} {name} {year}, {:02}:{:02} UTC", secs / 3_600, secs % 3_600 / 60)
+	format!("{day} {name} {year}, {:02}:{:02} UTC", secs.div_euclid(3_600), (secs % 3_600).div_euclid(60))
 }
 
 #[cfg(test)]

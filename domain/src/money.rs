@@ -101,7 +101,7 @@ impl Usdt {
 	/// outbound wire format). `"0"` for zero.
 	pub fn to_decimal_string(self) -> String {
 		let scale = 10u128.pow(CANONICAL_DECIMALS);
-		let int = self.0 / scale;
+		let int = self.0.div_euclid(scale);
 		let frac = self.0 % scale;
 		if frac == 0 {
 			return int.to_string();
@@ -288,7 +288,7 @@ pub(crate) fn mul_div_floor(a: u128, b: u128, denom: u128) -> Option<u128> {
 		return None;
 	}
 	if let Some(prod) = a.checked_mul(b) {
-		return Some(prod / denom);
+		return Some(prod.div_euclid(denom));
 	}
 	let (hi, lo) = widening_mul(a, b);
 	if hi >= denom {
@@ -439,7 +439,7 @@ mod tests {
 		assert_eq!(principal.scale(200 * year, 10_000 * year).unwrap(), Usdt::parse_decimal("20").unwrap());
 		// Half a year is half the fee — the numerator alone (1000e18 · 200 · 15768000)
 		// overflows u128, so this only holds on the 256-bit path.
-		assert_eq!(principal.scale(200 * (year / 2), 10_000 * year).unwrap(), Usdt::parse_decimal("10").unwrap());
+		assert_eq!(principal.scale(200 * year.div_euclid(2), 10_000 * year).unwrap(), Usdt::parse_decimal("10").unwrap());
 		// Flooring keeps the residual with the holder, never with the fee.
 		assert_eq!(Usdt::from_base_units(3).scale(1, 2).unwrap(), Usdt::from_base_units(1));
 		assert!(principal.scale(1, 0).is_err());

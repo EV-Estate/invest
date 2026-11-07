@@ -435,11 +435,11 @@ pub struct BookPolicy {
 
 impl BookPolicy {
 	/// `0.0001` units — the lot a product trades in until an operator says otherwise.
-	pub const DEFAULT_LOT_SIZE: Shares = Shares::from_base_units(SCALE / 10_000);
+	pub const DEFAULT_LOT_SIZE: Shares = Shares::from_base_units(SCALE.div_euclid(10_000));
 	/// 5 % — how far past the best quote a market order may fill.
 	pub const DEFAULT_MARKET_SLIPPAGE_BPS: u32 = 500;
 	/// `0.01` USDT — the tick a product trades on until an operator says otherwise.
-	pub const DEFAULT_PRICE_TICK: Price = Price::from_base_units(SCALE / 100);
+	pub const DEFAULT_PRICE_TICK: Price = Price::from_base_units(SCALE.div_euclid(100));
 	/// 1 % — the most a taker may be charged. A fee is the platform's cut of a trade between
 	/// two holders, and the operator setting it is one `AllocationManage` holder: above this
 	/// it would be a confiscation, not a fee.

@@ -76,10 +76,10 @@ pub fn run(args: ImportArgs) -> Result<ExitCode> {
 		})?;
 		match outcome {
 			Ok(outcome) => {
-				if !outcome.written {
-					println!("NOTHING WRITTEN: the file does not reconcile with itself");
-				} else {
+				if outcome.written {
 					println!("imported {} records, {} already imported", outcome.imported, outcome.already_imported);
+				} else {
+					println!("NOTHING WRITTEN: the file does not reconcile with itself");
 				}
 				outcome.report
 			}

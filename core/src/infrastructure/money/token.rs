@@ -344,7 +344,7 @@ fn accept(cache: &mut Cache, minted: MintedToken, now: i64) -> Result<(), Failur
 	cache.held = Some(Held {
 		header,
 		expires_at: minted.expires_at,
-		margin: (lifetime / 5).clamp(MIN_MARGIN_SECS, MAX_MARGIN_SECS),
+		margin: lifetime.div_euclid(5).clamp(MIN_MARGIN_SECS, MAX_MARGIN_SECS),
 		generation: cache.generations,
 	});
 	Ok(())

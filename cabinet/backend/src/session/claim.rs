@@ -37,7 +37,7 @@ fn claims(access_token: &str) -> Option<serde_json::Map<String, Value>> {
 }
 
 fn base64url(input: &str) -> Option<Vec<u8>> {
-	let mut out = Vec::with_capacity(input.len() * 3 / 4);
+	let mut out = Vec::with_capacity((input.len() * 3).div_euclid(4));
 	let (mut bits, mut have) = (0u32, 0u32);
 	for byte in input.trim_end_matches('=').bytes() {
 		let sextet = match byte {

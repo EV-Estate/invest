@@ -129,9 +129,9 @@ impl CrystallizationPeriod {
 	/// The period in seconds, on the same flat-365 year as [`SECONDS_PER_YEAR`].
 	pub const fn seconds(self) -> u128 {
 		match self {
-			Self::Monthly => SECONDS_PER_YEAR / 12,
-			Self::Quarterly => SECONDS_PER_YEAR / 4,
-			Self::SemiAnnual => SECONDS_PER_YEAR / 2,
+			Self::Monthly => SECONDS_PER_YEAR.div_euclid(12),
+			Self::Quarterly => SECONDS_PER_YEAR.div_euclid(4),
+			Self::SemiAnnual => SECONDS_PER_YEAR.div_euclid(2),
 			Self::Annual => SECONDS_PER_YEAR,
 		}
 	}
@@ -963,7 +963,7 @@ mod tests {
 	#[test]
 	fn performance_accrues_visibly_but_only_charges_at_the_period_end() {
 		// Half a year in, at a NAV well above the mark.
-		let half = YEAR / 2;
+		let half = YEAR.div_euclid(2);
 		let charge = assess(&FeePolicy::HOUSE, &snapshot(), nav("1.5"), Trigger::Period, half).unwrap();
 		assert!(!charge.crystallized);
 		// Disclosed (so a position can be shown net of accrued fees) but not taken.
@@ -979,7 +979,7 @@ mod tests {
 	#[test]
 	fn a_redemption_crystallizes_only_the_units_leaving_and_leaves_the_mark() {
 		// A quarter of the position exits mid-period at NAV 1.5.
-		let quarter = YEAR / 4;
+		let quarter = YEAR.div_euclid(4);
 		let charge = assess(&FeePolicy::HOUSE, &snapshot(), nav("1.5"), Trigger::Redemption { units: shares("250") }, quarter).unwrap();
 		assert!(charge.crystallized);
 		// 20% × 0.5 gain × 250 units = 25 USDT — the whole position would have been ~100.
@@ -1065,7 +1065,7 @@ mod tests {
 	fn crystallization_frequency_decides_when_a_gain_is_locked_in() {
 		let quarterly = FeePolicy::new(0, HOUSE_PERFORMANCE_BPS, 0, ManagementBasis::InvestedCapital, CrystallizationPeriod::Quarterly).unwrap();
 		let annual = FeePolicy::HOUSE;
-		let quarter = YEAR / 4;
+		let quarter = YEAR.div_euclid(4);
 		// One quarter in: the quarterly policy charges, the annual one only accrues.
 		assert!(assess(&quarterly, &snapshot(), nav("1.5"), Trigger::Period, quarter).unwrap().crystallized);
 		assert!(!assess(&annual, &snapshot(), nav("1.5"), Trigger::Period, quarter).unwrap().crystallized);

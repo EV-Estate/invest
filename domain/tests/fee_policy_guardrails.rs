@@ -43,7 +43,7 @@ fn a_reason_may_fill_its_whole_budget_but_not_one_byte_more() {
 	assert!(validate_reason(&"x".repeat(MAX_REASON_BYTES), true).is_ok());
 	assert!(validate_reason(&"x".repeat(MAX_REASON_BYTES + 1), true).is_err());
 	// The budget is in BYTES, not characters: a multi-byte reason is held to the same wire size.
-	let cyrillic = "ж".repeat(MAX_REASON_BYTES / 2);
+	let cyrillic = "ж".repeat(MAX_REASON_BYTES.div_euclid(2));
 	assert_eq!(cyrillic.len(), MAX_REASON_BYTES);
 	assert!(validate_reason(&cyrillic, true).is_ok());
 	assert!(validate_reason(&format!("{cyrillic}a"), true).is_err());

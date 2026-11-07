@@ -429,7 +429,7 @@ async fn a_recovery_below_the_mark_is_never_charged() {
 		&h.nav,
 		h.ledger.as_ref(),
 		service.clone(),
-		Usdt::from_base_units(value_now * 9 / 10),
+		Usdt::from_base_units((value_now * 9).div_euclid(10)),
 		"itest",
 		now_unix(),
 	)
@@ -440,7 +440,7 @@ async fn a_recovery_below_the_mark_is_never_charged() {
 		&h.nav,
 		h.ledger.as_ref(),
 		service.clone(),
-		Usdt::from_base_units(value_now * 13 / 10),
+		Usdt::from_base_units((value_now * 13).div_euclid(10)),
 		"itest",
 		now_unix(),
 	)

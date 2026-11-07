@@ -574,7 +574,7 @@ pub async fn snapshot(
 	let (mid, spread) = match (best_bid, best_ask) {
 		(Some(bid), Some(ask)) => (
 			Some(Price::from_base_units(
-				bid.base_units() / 2 + ask.base_units() / 2 + (bid.base_units() % 2 + ask.base_units() % 2) / 2,
+				bid.base_units().div_euclid(2) + ask.base_units().div_euclid(2) + (bid.base_units() % 2 + ask.base_units() % 2).div_euclid(2),
 			)),
 			Some(Price::from_base_units(ask.base_units().saturating_sub(bid.base_units()))),
 		),
@@ -626,7 +626,7 @@ pub async fn candles(store: &dyn BookStore, service: &ServiceId, resolution: Can
 	if from < 0 || to <= from {
 		return Err(DomainError::Validation("candle window must be non-empty and ordered".into()));
 	}
-	if (to - from) / resolution.seconds() > MAX_CANDLE_BUCKETS {
+	if (to - from).div_euclid(resolution.seconds()) > MAX_CANDLE_BUCKETS {
 		return Err(DomainError::Validation(format!(
 			"candle window spans more than {MAX_CANDLE_BUCKETS} buckets at {}",
 			resolution.as_str()
@@ -646,7 +646,7 @@ fn percent_change(reference: Price, last: Price) -> Option<String> {
 	// Hundredths of a percent: diff × 10 000 / reference, with the product widened
 	// through `Price::scale` so a large base-unit price never overflows.
 	let hundredths = Price::from_base_units(diff).scale(10_000, reference).ok()?.base_units();
-	Some(format!("{sign}{}.{:02}", hundredths / 100, hundredths % 100))
+	Some(format!("{sign}{}.{:02}", hundredths.div_euclid(100), hundredths % 100))
 }
 
 #[cfg(test)]
