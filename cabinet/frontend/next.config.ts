@@ -73,7 +73,7 @@ const nextConfig: NextConfig = {
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       // Wallet money actions run in a popup on evinvest.ltd that posts its result back to
       // this page; `same-origin` would sever the opener link and every action would end
-      // as `closed` (@evinvest/wallet README). This is the strictest value that works.
+      // as `closed` (@evinvest/banking README). This is the strictest value that works.
       { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
     ];
     if (IN_PRODUCTION) {

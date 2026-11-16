@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { useT } from "@evinvest/i18n/react";
 import { Alert, AlertDescription, AlertTitle, type AlertVariant } from "@evinvest/uikit";
-import type { WalletActionOutcome } from "@evinvest/wallet";
+import type { WalletActionOutcome } from "@evinvest/banking";
 
 type Shown = WalletActionOutcome | { status: "invalid_link" };
 

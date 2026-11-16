@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useT } from "@evinvest/i18n/react";
 import { Button } from "@evinvest/uikit";
-import { openWalletAction, walletNavigationHref, walletPaymentUrl, type WalletActionOutcome } from "@evinvest/wallet";
+import { openWalletAction, walletNavigationHref, walletPaymentUrl, type WalletActionOutcome } from "@evinvest/banking";
 
 import { PageFrame } from "@/shared/ui/page-frame";
 import { Link } from "@/shared/ui/cabinet-link";

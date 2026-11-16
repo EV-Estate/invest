@@ -2,14 +2,14 @@
 
 // The platform's element bundles this cabinet mounts: the concierge sign-in dialog and
 // account page, the banking wallet. Each producer publishes a registry on evinvest.ltd; the
-// readers in @evinvest/concierge and @evinvest/wallet refuse a bundle outside the directory
+// readers in @evinvest/concierge and @evinvest/banking refuse a bundle outside the directory
 // the CSP allows (`shared/config/security.ts`), so a registry that passes here also loads.
 
 import { useEffect, useState } from "react";
 
 import { type ConciergeElement, conciergeEntry, fetchConciergeRegistry } from "@evinvest/concierge";
 import type { MfeEntry, ParseResult } from "@evinvest/mfe";
-import { type WalletElement, fetchWalletRegistry, walletEntry } from "@evinvest/wallet";
+import { type WalletElement, fetchWalletRegistry, walletEntry } from "@evinvest/banking";
 
 /** `failed` is final for this page: the caller renders its fallback, not a retry loop. */
 export type PlatformElement = { status: "loading" } | { status: "ready"; entry: MfeEntry } | { status: "failed" };

@@ -13,7 +13,7 @@
 // stay allowed without 'unsafe-inline').
 
 import { CONCIERGE_MFE_PREFIX, CONCIERGE_ORIGIN } from "@evinvest/concierge";
-import { WALLET_MFE_PREFIX, WALLET_ORIGIN } from "@evinvest/wallet";
+import { WALLET_MFE_PREFIX, WALLET_ORIGIN } from "@evinvest/banking";
 
 import { config } from "../../config.ts";
 

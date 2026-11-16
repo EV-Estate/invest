@@ -19,7 +19,7 @@ All under `/cabinet/{locale}`; a request without a locale is redirected into one
 | `/` | Portfolio — positions across allocations, performance |
 | `/invest`, `/invest/[service]` | Allocations: the catalog, one product, subscribe and redeem |
 | `/invest/[service]/trade` | The order book terminal for one product |
-| `/wallet` | Banking's wallet element, `scope="invest"` (`@evinvest/wallet`) — the only place cash is shown |
+| `/wallet` | Banking's wallet element, `scope="invest"` (`@evinvest/banking`) — the only place cash is shown |
 | `/wallet/action/payment/[id]` | Landing of a payment-consent notice: the "Review the payment" button opens the answer page on evinvest.ltd in a popup (`openWalletAction`) and shows how it ended. No sign-in gate; it never answers the payment itself |
 | `/account` | Concierge's account element (`@evinvest/concierge`): profile, security, identity verification |
 | `/admin/allocations` | Allocation registry; "Manage access" leads to `evinvest.ltd/admin/scopes`, where scope and panel grants live (§7) |

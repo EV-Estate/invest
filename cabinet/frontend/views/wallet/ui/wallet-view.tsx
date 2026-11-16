@@ -2,7 +2,7 @@
 
 import { useT } from "@evinvest/i18n/react";
 
-import { Wallet } from "@evinvest/wallet/react";
+import { Wallet } from "@evinvest/banking/react";
 
 import { Skeleton } from "@evinvest/uikit";
 
