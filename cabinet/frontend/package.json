@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@evinvest/analytics": "^0.4.0",
-    "@evinvest/banking": "^0.3.0",
+    "@evinvest/banking": "^0.4.0",
     "@evinvest/concierge": "^0.1.1",
     "@evinvest/error-monitoring": "^0.1.0",
     "@evinvest/experiments": "^0.4.0",
