@@ -52,7 +52,7 @@ cosmetic: the BFF and invest-core re-check every request.
 - **Guest:** every page renders; the route gate shows a sign-in wall in the dimmed
   shell. "Sign in" sets `?login`, which mounts concierge's `<mfe-concierge-sign-in>`
   (`features/auth`), loaded from the registry at
-  `https://evinvest.ltd/api/auth/mfe/registry.json`.
+  `https://evinvest.ltd/mfe/concierge/registry.json`.
 - **After sign-in** (`ev:signed-in`) the page navigates to the BFF's RP login,
   `/cabinet/api/auth/login?return_to=<this page>`. The BFF runs concierge's
   `authorize` → `code` → `/cabinet/auth/callback` for the RP client `invest` and sets the
