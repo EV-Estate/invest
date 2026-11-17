@@ -107,7 +107,7 @@ impl UnixClock for HostClock {
 
 /// Why no bearer could be had. The text carries the status code and a bounded piece of
 /// banking's message, never the token.
-#[derive(Debug, Clone, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error)]
 #[error("service token unavailable: {0}")]
 pub struct TokenError(String);
 
