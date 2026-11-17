@@ -46,7 +46,7 @@ use invest_domain::{
 };
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 const SUITE: &str = "ownership fee test";
 

@@ -14,7 +14,7 @@
 //! Moved from banking 9ffafce3 (`piggybank/core/tests/book.rs`). The wallet test and the
 //! read-only kill switch stayed there: both are banking's.
 
-mod common;
+use crate::common;
 
 use std::{ops::Deref, sync::Arc};
 

@@ -9,7 +9,7 @@
 //! ceiling; and a pending rise is a row, so a restart does not lose it. Time is a parameter
 //! of every call, so the notice period is driven, not waited for.
 
-mod common;
+use crate::common;
 
 use invest_core::{
 	application::{allocations as allocations_app, book as book_app},

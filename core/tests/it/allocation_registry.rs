@@ -38,7 +38,7 @@ use sqlx::{
 };
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 const SUITE: &str = "allocation-registry test";
 

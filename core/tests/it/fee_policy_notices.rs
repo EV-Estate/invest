@@ -41,7 +41,7 @@ use invest_domain::{
 };
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 struct Harness {
 	engine: common::Engine,

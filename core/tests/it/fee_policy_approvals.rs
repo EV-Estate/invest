@@ -31,7 +31,7 @@ use invest_domain::{
 };
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 /// Slack for the second or two between a test's `now()` and the one the write path stamps.
 const CLOCK_SLACK: i64 = 30;

@@ -36,7 +36,7 @@ use tokio::sync::MutexGuard;
 use tokio_util::sync::CancellationToken;
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 static SERIAL: LazyLock<tokio::sync::Mutex<()>> = LazyLock::new(|| tokio::sync::Mutex::new(()));
 

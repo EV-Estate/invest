@@ -34,7 +34,7 @@ use invest_domain::{
 };
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 use common::{as_caller, operator};
 

@@ -40,7 +40,7 @@ use invest_domain::{
 use sqlx::PgPool;
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 const YEAR: i64 = 365 * 24 * 60 * 60;
 /// Slack for the second or two between a test's `now()` and the one the write path stamps.

@@ -56,7 +56,7 @@ use invest_domain::{
 };
 use uuid::Uuid;
 
-mod common;
+use crate::common;
 
 const YEAR: i64 = 365 * 24 * 60 * 60;
 /// Backdating by *exactly* one period lands a hair SHORT of the boundary: the accrual
