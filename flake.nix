@@ -626,19 +626,7 @@
           };
         };
 
-        # the cabinet's i18n gates; shares the cabinet particles' `npm ci`
-        i18n = {
-          name = "cabinet-frontend-i18n";
-          inherit (pkgs.lib.findFirst (p: p.name == "cabinet-frontend-typecheck") (throw "js has no cabinet-frontend-typecheck") js.particles.errors) prepare ciCache;
-          program = pkgs.writeShellApplication {
-            name = "cabinet-frontend-i18n";
-            runtimeInputs = [ js.nodejs pkgs.git ];
-            text = ''
-              cd "$(git rev-parse --show-toplevel)/cabinet/frontend"
-              exec npm run i18n:check
-            '';
-          };
-        };
+        i18n = js.script "cabinet/frontend" "i18n:check";
 
         # Cargo.lock agrees with the manifests. `--locked` refuses
         # to re-resolve, so a merge that took a new git rev in Cargo.toml while keeping the
