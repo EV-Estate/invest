@@ -33,8 +33,7 @@ nix run .#tb            # invest's TigerBeetle on :3034 (data under .tb/)
 nix run .#invest-core   # invest-core alone
 nix run .#cabinet-backend  # the cabinet BFF (:50072) alone; needs .#db
 nix run .#cabinet-frontend # the cabinet, next dev on :3000/cabinet, against the BFF
-nix run .#check-rust    # clippy (warnings denied) + tests against a throwaway Postgres + TigerBeetle
-nix run .#check-frontend   # the cabinet's tsc + eslint + i18n gates
+nix run .#test          # every check, as CI: clippy, tests against a throwaway Postgres + TigerBeetle, the cabinet's tsc/eslint/i18n; -- --help lists them
 ```
 
 Tests by hand, against your own services:

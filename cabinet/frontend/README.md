@@ -101,7 +101,7 @@ a registration may name the `scope` whose compartments hold the product's cash.
 
 ```sh
 nix run .#cabinet-frontend     # next dev on http://localhost:3000/cabinet, BFF at :50072
-nix run .#check-frontend       # tsc + eslint + i18n gates, as CI runs them
+nix run .#test                 # every check (here: cabinet-frontend-*), as CI runs them
 nix build .#cabinet            # the standalone server the image runs
 ```
 

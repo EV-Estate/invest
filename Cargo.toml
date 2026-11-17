@@ -86,6 +86,9 @@ non_kebab_case_bins = "allow"
 if_not_else = "warn"
 integer_division = "warn"
 
+[workspace.package]
+repository = "https://github.com/EV-Estate/invest"
+
 # smaller target/: trim debuginfo (deps need none), keep line tables for backtraces
 [profile.dev]
 debug = "line-tables-only"

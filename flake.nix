@@ -46,8 +46,9 @@
         portEnv = pkgs.lib.concatStrings (pkgs.lib.mapAttrsToList (n: v: "export ${n}=\"\${${n}:-${v}}\"\n") ports);
 
         rs = v_flakes.rs { inherit pkgs rust; };
+        js = v_flakes.js { inherit pkgs; packages = [ "cabinet/frontend" ]; };
         github = v_flakes.github {
-          inherit pkgs pname rs;
+          inherit pkgs pname rs js;
           enable = true;
           lastSupportedVersion = "nightly-2026-05-12";
           containerRelease = { registry = "ghcr.io/ev-estate"; };
@@ -61,13 +62,25 @@
             ## Nix build outputs beyond the base `result`
             result-*
           '';
+          # v_flakes' rust particles can't link .tb-client, which the workspace's `tigerbeetle` path dep needs: these do
           jobs = {
-            warnings.augment = [ "tokei" "code-duplication" ];
+            default = true;
+            errors = {
+              exclude = [
+                "rust-tests"
+                "cabinet-frontend-test" # the cabinet has no unit tests yet
+              ];
+              augment = [ rustTests lockDrift i18n ];
+            };
+            warnings = {
+              exclude = [ "rust-doc" "rust-clippy" ];
+              augment = [ rustClippy ];
+            };
           };
         };
         # No readme-fw: it regenerates README.md on every shell entry, and the README here
         # is hand-written.
-        combined = v_flakes.utils.combine { inherit rust; modules = [ rs github ]; };
+        combined = v_flakes.utils.combine { inherit rust; modules = [ rs js github ]; };
 
         # tonic-build / prost-build shell out to protoc; point them at nixpkgs'.
         protocEnv = ''export PROTOC="${pkgs.protobuf}/bin/protoc"'';
@@ -527,107 +540,121 @@
           '';
         };
 
-        # ── the build/test gate (CI entry point) ────────────────────────────
-        # clippy with warnings denied, then the workspace tests against a THROWAWAY Postgres
+        # ── checks (particles: `nix run .#test`) ────────────────────────────
+        # The workspace's path dep on .tb-client: a fresh checkout has no link until this runs.
+        tbClient = pkgs.writeShellApplication {
+          name = "tb-client";
+          runtimeInputs = [ pkgs.git pkgs.coreutils ];
+          text = linkTbClient;
+        };
+
+        # The workspace tests against a THROWAWAY Postgres
         # and TigerBeetle on ports away from the dev ones (and from banking's gate, 54329 /
         # 3039), with CI=true so tests/common FAILS instead of skipping when a service is
         # missing — a green run that touched neither is the outcome this gate exists to stop.
         # /tmp rather than mktemp's default: macOS's $TMPDIR pushes the postgres socket path
         # past the 103-byte sun_path limit.
-        runCheckRust = pkgs.writeShellApplication {
-          name = "run-check-rust";
-          # mold: the generated .cargo/config.toml links x86_64-linux with `-fuse-ld=mold`,
-          # and a CI runner has no linker of that name outside the dev shell (banking's gate
-          # carries it for the same reason).
-          # No pkg-config/openssl here, as in banking: nixpkgs' pkg-config searches only the
-          # store, so openssl-sys (native-tls under ev_lib's reqwest and sentry) would build
-          # against nixpkgs' openssl and load its glibc at test time beside the runner's
-          # (GLIBC_ABI_DT_X86_64_PLT not found). The runner's own pkg-config finds its libssl.
-          runtimeInputs = (with pkgs; [ rust git protobuf mold postgresql coreutils ]) ++ [ tigerbeetleBin ];
-          text = ''
-            cd "$(git rev-parse --show-toplevel)"
-            ${linkTbClient}
-            ${protocEnv}
-            ${noWrapper}
+        rustTests = {
+          name = "rust-tests";
+          prepare = tbClient;
+          program = pkgs.writeShellApplication {
+            name = "rust-tests";
+            # mold: the generated .cargo/config.toml links x86_64-linux with `-fuse-ld=mold`,
+            # and a CI runner has no linker of that name outside the dev shell (banking's gate
+            # carries it for the same reason).
+            # No pkg-config/openssl here, as in banking: nixpkgs' pkg-config searches only the
+            # store, so openssl-sys (native-tls under ev_lib's reqwest and sentry) would build
+            # against nixpkgs' openssl and load its glibc at test time beside the runner's
+            # (GLIBC_ABI_DT_X86_64_PLT not found). The runner's own pkg-config finds its libssl.
+            runtimeInputs = (with pkgs; [ rust git protobuf mold postgresql coreutils ]) ++ [ tigerbeetleBin ];
+            text = ''
+              cd "$(git rev-parse --show-toplevel)"
+              ${protocEnv}
+              ${noWrapper}
 
-            echo "▶ clippy (workspace, all targets, warnings denied)"
-            cargo clippy --workspace --all-targets -- -D warnings
+              scratch="$(mktemp -d /tmp/invest-check.XXXXXX)"
+              export XDG_STATE_HOME="$scratch/state"
+              export TB_DATA="$scratch/tb"
+              export POSTGRES_PORT="''${CHECK_POSTGRES_PORT:-54339}"
+              export TIGERBEETLE_PORT="''${CHECK_TIGERBEETLE_PORT:-3049}"
+              export PGDATABASES="invest_check"
+              tb_pid=""
+              cleanup() {
+                if [ -n "$tb_pid" ]; then kill "$tb_pid" 2>/dev/null || true; fi
+                pg_ctl -D "$XDG_STATE_HOME/ev_invest/pg/data" -m fast stop >/dev/null 2>&1 || true
+                rm -rf "$scratch"
+              }
+              trap cleanup EXIT
 
-            scratch="$(mktemp -d /tmp/invest-check.XXXXXX)"
-            export XDG_STATE_HOME="$scratch/state"
-            export TB_DATA="$scratch/tb"
-            export POSTGRES_PORT="''${CHECK_POSTGRES_PORT:-54339}"
-            export TIGERBEETLE_PORT="''${CHECK_TIGERBEETLE_PORT:-3049}"
-            export PGDATABASES="invest_check"
-            tb_pid=""
-            cleanup() {
-              if [ -n "$tb_pid" ]; then kill "$tb_pid" 2>/dev/null || true; fi
-              pg_ctl -D "$XDG_STATE_HOME/ev_invest/pg/data" -m fast stop >/dev/null 2>&1 || true
-              rm -rf "$scratch"
-            }
-            trap cleanup EXIT
+              echo "▶ postgres :$POSTGRES_PORT + tigerbeetle :$TIGERBEETLE_PORT (throwaway)"
+              ${runPostgres}/bin/run-postgres
+              TBCLUSTER=0 ${runTigerbeetle}/bin/run-tigerbeetle >"$scratch/tb.log" 2>&1 &
+              tb_pid=$!
+              for _ in $(seq 1 150); do
+                if (exec 3<>"/dev/tcp/127.0.0.1/$TIGERBEETLE_PORT") 2>/dev/null; then break; fi
+                if ! kill -0 "$tb_pid" 2>/dev/null; then cat "$scratch/tb.log" >&2; echo "tigerbeetle exited" >&2; exit 1; fi
+                sleep 0.2
+              done
+              if ! (exec 3<>"/dev/tcp/127.0.0.1/$TIGERBEETLE_PORT") 2>/dev/null; then
+                cat "$scratch/tb.log" >&2; echo "tigerbeetle did not come up on :$TIGERBEETLE_PORT" >&2; exit 1
+              fi
+              export DATABASE_URL="postgres://postgres@127.0.0.1:$POSTGRES_PORT/invest_check"
+              export TIGERBEETLE_ADDRESS="127.0.0.1:$TIGERBEETLE_PORT"
+              export TIGERBEETLE_CLUSTER_ID=0
+              export CI=true
 
-            echo "▶ postgres :$POSTGRES_PORT + tigerbeetle :$TIGERBEETLE_PORT (throwaway)"
-            ${runPostgres}/bin/run-postgres
-            TBCLUSTER=0 ${runTigerbeetle}/bin/run-tigerbeetle >"$scratch/tb.log" 2>&1 &
-            tb_pid=$!
-            for _ in $(seq 1 150); do
-              if (exec 3<>"/dev/tcp/127.0.0.1/$TIGERBEETLE_PORT") 2>/dev/null; then break; fi
-              if ! kill -0 "$tb_pid" 2>/dev/null; then cat "$scratch/tb.log" >&2; echo "tigerbeetle exited" >&2; exit 1; fi
-              sleep 0.2
-            done
-            if ! (exec 3<>"/dev/tcp/127.0.0.1/$TIGERBEETLE_PORT") 2>/dev/null; then
-              cat "$scratch/tb.log" >&2; echo "tigerbeetle did not come up on :$TIGERBEETLE_PORT" >&2; exit 1
-            fi
-            export DATABASE_URL="postgres://postgres@127.0.0.1:$POSTGRES_PORT/invest_check"
-            export TIGERBEETLE_ADDRESS="127.0.0.1:$TIGERBEETLE_PORT"
-            export TIGERBEETLE_CLUSTER_ID=0
-            export CI=true
+              echo "▶ tests (workspace, integration suites against the throwaway services)"
+              cargo test --workspace
 
-            echo "▶ tests (workspace, integration suites against the throwaway services)"
-            cargo test --workspace
-
-            echo "✓ rust ok"
-          '';
+              echo "✓ rust ok"
+            '';
+          };
         };
 
-        # ── the frontend gate (CI entry point) ──────────────────────────────
-        # Against a clean `npm ci`: tsc, eslint, and both i18n gates. The cabinet has no unit
-        # tests yet; when it grows them, `npm test` joins here.
-        runCheckFrontend = pkgs.writeShellApplication {
-          name = "run-check-frontend";
-          runtimeInputs = with pkgs; [ nodejs git ];
-          text = ''
-            cd "$(git rev-parse --show-toplevel)/cabinet/frontend"
-            # `ci`, not `install`: the lock is the point of a check run.
-            npm ci
-
-            echo "▶ tsc --noEmit"
-            npm run check
-
-            echo "▶ eslint"
-            npm run lint
-
-            echo "▶ i18n catalogues"
-            npm run i18n:check
-
-            echo "✓ frontend ok"
-          '';
+        rustClippy = {
+          name = "rust-clippy";
+          prepare = tbClient;
+          program = pkgs.writeShellApplication {
+            name = "rust-clippy";
+            runtimeInputs = with pkgs; [ rust git protobuf mold ];
+            text = ''
+              cd "$(git rev-parse --show-toplevel)"
+              ${protocEnv}
+              ${noWrapper}
+              exec cargo clippy --workspace --all-targets -- -D warnings
+            '';
+          };
         };
 
-        # `nix run .#drift-check` — Cargo.lock agrees with the manifests. `--locked` refuses
+        # the cabinet's i18n gates; shares the cabinet particles' `npm ci`
+        i18n = {
+          name = "cabinet-frontend-i18n";
+          inherit (pkgs.lib.findFirst (p: p.name == "cabinet-frontend-typecheck") (throw "js has no cabinet-frontend-typecheck") js.particles.errors) prepare ciCache;
+          program = pkgs.writeShellApplication {
+            name = "cabinet-frontend-i18n";
+            runtimeInputs = [ js.nodejs pkgs.git ];
+            text = ''
+              cd "$(git rev-parse --show-toplevel)/cabinet/frontend"
+              exec npm run i18n:check
+            '';
+          };
+        };
+
+        # Cargo.lock agrees with the manifests. `--locked` refuses
         # to re-resolve, so a merge that took a new git rev in Cargo.toml while keeping the
         # old one in Cargo.lock fails HERE rather than at the image build.
-        runDriftCheck = pkgs.writeShellApplication {
-          name = "run-drift-check";
-          runtimeInputs = [ rust pkgs.git ];
-          text = ''
-            cd "$(git rev-parse --show-toplevel)"
-            ${linkTbClient}
-            ${noWrapper}
-            cargo metadata --locked --format-version 1 >/dev/null
-            echo "✓ no drift"
-          '';
+        lockDrift = {
+          name = "lock-drift";
+          prepare = tbClient;
+          program = pkgs.writeShellApplication {
+            name = "lock-drift";
+            runtimeInputs = [ rust pkgs.git ];
+            text = ''
+              cd "$(git rev-parse --show-toplevel)"
+              ${noWrapper}
+              exec cargo metadata --locked --format-version 1 >/dev/null
+            '';
+          };
         };
 
         runHelp = pkgs.writeShellScriptBin "help" ''
@@ -638,9 +665,7 @@
           nix run .#cabinet-frontend  the cabinet (next dev) on :3000/cabinet, against the BFF
           nix run .#db            ensure the shared Postgres and the 'invest' database
           nix run .#tb            invest's local TigerBeetle on :3034
-          nix run .#check-rust    clippy (warnings denied) + workspace tests, as CI runs them
-          nix run .#check-frontend   the cabinet's tsc + eslint + i18n gates, as CI runs them
-          nix run .#drift-check   Cargo.lock matches the manifests
+          nix run .#test          every check (clippy, tests against a throwaway Postgres + TigerBeetle, lock drift, the cabinet's tsc/eslint/i18n); -- --help lists them
           nix build .#ev_invest-invest-core-container   the invest-core OCI image (containers.invest-core)
           nix build .#ev_invest-invest-cabinet-backend-container   the cabinet BFF's OCI image
           nix build .#ev_invest-invest-cabinet-container   the cabinet's OCI image (Next standalone)
@@ -652,9 +677,6 @@
         # `nix run .#invest-core` → invest-core alone (applies migrations on boot; needs `.#db` + `.#tb`)
         # `nix run .#db`          → ensure the SHARED ev_invest Postgres is up (+ the `invest` database)
         # `nix run .#tb`          → invest's local TigerBeetle on :3034 (repo-local data under .tb/)
-        # `nix run .#check-rust`  → clippy (warnings denied) + workspace tests, as CI runs them
-        # `nix run .#check-frontend` → the cabinet's tsc + eslint + i18n gates, as CI runs them
-        # `nix run .#drift-check` → Cargo.lock matches the manifests
         # Author new migrations with the sqlx CLI (in the dev shell):
         #   sqlx migrate add --source core/migrations --sequential <name>
         apps = {
@@ -664,9 +686,6 @@
           cabinet-frontend = { type = "app"; program = "${runCabinetFrontend}/bin/run-cabinet-frontend"; };
           db = { type = "app"; program = "${runPostgres}/bin/run-postgres"; };
           tb = { type = "app"; program = "${runTigerbeetle}/bin/run-tigerbeetle"; };
-          check-rust = { type = "app"; program = "${runCheckRust}/bin/run-check-rust"; };
-          check-frontend = { type = "app"; program = "${runCheckFrontend}/bin/run-check-frontend"; };
-          drift-check = { type = "app"; program = "${runDriftCheck}/bin/run-drift-check"; };
           help = { type = "app"; program = "${runHelp}/bin/help"; };
         };
 
@@ -702,7 +721,6 @@
               postgresql
               sqlx-cli
               tigerbeetleBin
-              nodejs
             ] ++ pre-commit-check.enabledPackages ++ combined.enabledPackages;
 
             env.RUST_BACKTRACE = 1;
